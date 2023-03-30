@@ -8,6 +8,8 @@ import { useUserContext } from '../context/user_context'
 
 const CartButtons = () => {
   const { closeSidebar } = useProductsContext()
+  const { total_items: total, clearCart } = useCartContext()
+  const { loginWithRedirect, myUser, logout } = useUserContext()
   return (
     <Wrapper className="cart-btn-wrapper">
       {/* Todo-> close the sidebar when clicked  */}
@@ -16,13 +18,27 @@ const CartButtons = () => {
         <span className="cart-container">
           {' '}
           <FaShoppingCart />
-          <span className="cart-value">3</span>
+          <span className="cart-value">{total}</span>
         </span>
       </Link>
-      <button type="button" className="auth-btn">
-        Login
-        <FaUserPlus />
-      </button>
+      {myUser ? (
+        <button
+          type="button"
+          className="auth-btn"
+          onClick={() => {
+            logout({ returnTo: window.location.origin })
+            clearCart()
+          }}
+        >
+          Logout
+          <FaUserMinus />
+        </button>
+      ) : (
+        <button type="button" className="auth-btn" onClick={loginWithRedirect}>
+          Login
+          <FaUserPlus />
+        </button>
+      )}
     </Wrapper>
   )
 }

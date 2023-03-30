@@ -1,8 +1,8 @@
 export const formatPrice = (number) => {
   return new Intl.NumberFormat('it-IT', {
     style: 'currency',
-    currency: 'EUR',
-  }).format(number)
+    currency: 'eur',
+  }).format(number / 100)
 }
 
 export const getUniqueValues = (data, type) => {

@@ -11,26 +11,47 @@ const AddToCart = ({ product }) => {
   const [mainColor, setMainColor] = useState(colors[0])
   const [amount, setAmount] = useState(1)
 
-  const changeAmount = (opt) => {
-    if (opt === 'I') {
-      setAmount((i) => {
-        let temAmount = i + 1
-        if (temAmount > stock) {
-          temAmount = stock
-        }
-        return temAmount
-      })
-    }
-    if (opt === 'D') {
-      return setAmount((i) => {
-        let temAmount = i - 1
-        if (amount <= 1) {
-          temAmount = 1
-        }
-        return temAmount
-      })
-    }
+  const increase = () => {
+    setAmount((i) => {
+      let temAmount = i + 1
+      if (temAmount > stock) {
+        temAmount = stock
+      }
+      return temAmount
+    })
   }
+
+  const decrease = () => {
+    setAmount((i) => {
+      let temAmount = i - 1
+      if (amount <= 1) {
+        temAmount = 1
+      }
+      return temAmount
+    })
+  }
+
+  //? not god for the end of the function
+  // const changeAmount = (opt) => {
+  //   if (opt === 'I') {
+  //     setAmount((i) => {
+  //       let temAmount = i + 1
+  //       if (temAmount > stock) {
+  //         temAmount = stock
+  //       }
+  //       return temAmount
+  //     })
+  //   }
+  //   if (opt === 'D') {
+  //     return setAmount((i) => {
+  //       let temAmount = i - 1
+  //       if (amount <= 1) {
+  //         temAmount = 1
+  //       }
+  //       return temAmount
+  //     })
+  //   }
+  // }
 
   return (
     <Wrapper>
@@ -54,7 +75,11 @@ const AddToCart = ({ product }) => {
         </div>
       </div>
       <div className="btn-container">
-        <AmountButtons amount={amount} changeAmount={changeAmount} />
+        <AmountButtons
+          amount={amount}
+          increase={increase}
+          decrease={decrease}
+        />
         <Link
           to="/cart"
           className="btn"

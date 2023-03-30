@@ -59,16 +59,7 @@ const filter_reducer = (state, action) => {
   if (action.type === FILTER_PRODUCTS) {
     //TODO filtering product
     const { all_products } = state
-    const {
-      text,
-      company,
-      category,
-      color,
-      min_price,
-      max_price,
-      price,
-      shipping,
-    } = state.filters
+    const { text, company, category, color, price, shipping } = state.filters
     let tempProducts = [...all_products] // to filter we need default data if we don't use a copy of the all_products we run out of item in a lil
     // start filtering here
     // ! TEXT FILTER

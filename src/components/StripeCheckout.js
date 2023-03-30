@@ -11,16 +11,143 @@ import axios from 'axios'
 import { useCartContext } from '../context/cart_context'
 import { useUserContext } from '../context/user_context'
 import { formatPrice } from '../utils/helpers'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
+
+// setup stripe payment
+
+const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY)
 
 const CheckoutForm = () => {
-  return <h4>hello from Stripe Checkout </h4>
+  const { cart, total_amount, shipping_fee, clearCart } = useCartContext()
+  const { myUser } = useUserContext()
+
+  // !!! SRIPE STUFF !!!
+
+  const [succeeded, setSucceeded] = useState(false)
+  const [error, setError] = useState(null)
+  const [processing, setProcessing] = useState('')
+  const [disabled, setDisabled] = useState(true)
+  const [clientSecret, setClientSecret] = useState('')
+  const stripe = useStripe()
+  const elements = useElements()
+  const navigate = useNavigate()
+
+  // eslint-disable-next-line
+
+  const cardStyle = {
+    style: {
+      base: {
+        color: '#32325d',
+        fontFamily: 'Arial, sans-serif',
+        fontSmoothing: 'antialiased',
+        fontSize: '16px',
+        '::placeholder': {
+          color: '#32325d',
+        },
+      },
+      invalid: {
+        color: '#fa755a',
+        iconColor: '#fa755a',
+      },
+    },
+  }
+
+  const createPaymentIntent = async () => {
+    // when the component mounts
+    try {
+      const { data } = await axios.post(
+        '/.netlify/functions/create-payment-intent',
+        JSON.stringify({ cart, shipping_fee, total_amount })
+      )
+      console.log(data.clientSecret)
+      setClientSecret(data.clientSecret)
+    } catch (error) {
+      // console.log(error.response)
+    }
+  }
+
+  useEffect(() => {
+    createPaymentIntent()
+    // eslint-disable-next-line
+  }, [])
+
+  const handleChange = async (event) => {
+    setDisabled(event.empty)
+    setError(event.error ? event.error.message : '')
+  }
+  const handleSubmit = async (ev) => {
+    ev.preventDefault()
+    setProcessing(true)
+    const payload = await stripe.confirmCardPayment(clientSecret, {
+      payment_method: {
+        card: elements.getElement(CardElement),
+      },
+    })
+    // !!"ERROR"
+    if (payload.error) {
+      setError(`Payment Failed ${payload.error.message}`)
+      setProcessing(false)
+    } else {
+      setError(null)
+      setProcessing(false)
+      setSucceeded(true)
+      setTimeout(() => {
+        clearCart()
+        navigate('/')
+      }, 5000)
+    }
+  }
+
+  return (
+    <div>
+      {succeeded ? (
+        <article>
+          <h4>Thank you</h4>
+          <h4>Your Payment was Successful</h4>
+          <h4>Redirecting to home page shortly ...</h4>
+        </article>
+      ) : (
+        <article>
+          <h4>Hello, {myUser && myUser.name}</h4>
+          <p>Your total is {formatPrice(shipping_fee + total_amount)}</p>
+          <p>Test Card Number: 4242 4242 4242 4242 </p>
+        </article>
+      )}
+
+      <form id="payment-form" onSubmit={handleSubmit}>
+        <CardElement
+          id="card-element"
+          options={cardStyle}
+          onChange={handleChange}
+        />
+        <button disabled={processing || disabled || succeeded} id="submit">
+          <span id="button-text">
+            {processing ? <div className="spinner" id="spinner"></div> : 'Pay'}
+          </span>
+        </button>
+        {/* show errors that occurs during the payment process all */}
+        {error && (
+          <div className="card-error" role="alert">
+            {error}
+          </div>
+        )}
+        {/* show if the payment is succeeded */}
+        <p className={succeeded ? 'result-message' : 'result-message hidden'}>
+          Payment Succeeded, see the result in your
+          <a href={'https://dashboard.stripe.com/test/payment'}> Dashboard </a>
+          Refresh the page to pay again
+        </p>
+      </form>
+    </div>
+  )
 }
 
 const StripeCheckout = () => {
   return (
     <Wrapper>
-      <CheckoutForm />
+      <Elements stripe={stripePromise}>
+        <CheckoutForm />
+      </Elements>
     </Wrapper>
   )
 }

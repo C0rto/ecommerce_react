@@ -1,5 +1,4 @@
-import React, { useState } from 'react'
-import logo from '../assets/logo.svg'
+import React from 'react'
 import { Link } from 'react-router-dom'
 import { useProductsContext } from '../context/products_context'
 import { FaTimes } from 'react-icons/fa'
@@ -10,6 +9,7 @@ import { useUserContext } from '../context/user_context'
 
 const Sidebar = () => {
   const { isSidebarOpen, closeSidebar } = useProductsContext()
+  const { myUser } = useUserContext()
   return (
     <SidebarContainer>
       <aside className={`sidebar ${isSidebarOpen && 'show-sidebar'} `}>
@@ -29,10 +29,9 @@ const Sidebar = () => {
                 fontWeight: '400',
               }}
             >
-              Sidebar
+              Ikea
             </span>
           </h4>
-          {/* <img src={logo} className="logo" alt="bruni mobili" /> */}
           <button className="close-btn" onClick={closeSidebar} type="button">
             <FaTimes />
           </button>
@@ -48,11 +47,13 @@ const Sidebar = () => {
               </li>
             )
           })}
-          <li>
-            <Link to="/checkout" onClick={closeSidebar}>
-              checkout
-            </Link>
-          </li>
+          {myUser && (
+            <li>
+              <Link to="/checkout" onClick={closeSidebar}>
+                checkout
+              </Link>
+            </li>
+          )}
         </ul>
         <CartButtons />
       </aside>
